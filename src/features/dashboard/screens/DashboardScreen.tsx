@@ -56,11 +56,8 @@ export default function DashboardScreen() {
       <View style={styles.content}>
         <DashboardHeader />
 
-        <View style={styles.summaryRow}>
-          <MonthlyTotalCard amount={formatCurrency(monthlyTotal, userPreferences.currency)} activeCount={activeSubscriptions.length} />
-          <View style={styles.cardSpacer} />
-          <YearlyTotalCard amount={formatCurrency(yearlyTotal, userPreferences.currency)} />
-        </View>
+        <MonthlyTotalCard amount={formatCurrency(monthlyTotal, userPreferences.currency)} activeCount={activeSubscriptions.length} />
+        <YearlyTotalCard amount={formatCurrency(yearlyTotal, userPreferences.currency)} />
 
         {nextTrialEnding?.trialEndsDate && (
           <AlertBanner title="Trial Ending Soon" message={`${nextTrialEnding.name} trial ends ${formatTrialEndDate(nextTrialEnding.trialEndsDate)}`} />
@@ -96,8 +93,6 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   content: { padding: SPACING.md, paddingBottom: SPACING.xl },
-  summaryRow: { flexDirection: 'row', marginBottom: SPACING.md },
-  cardSpacer: { width: SPACING.md },
   section: { marginBottom: SPACING.lg },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.md },
   sectionTitle: { fontSize: FONT_SIZES.lg, fontWeight: '600', color: COLORS.text },

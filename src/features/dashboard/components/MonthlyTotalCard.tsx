@@ -19,10 +19,10 @@ export function MonthlyTotalCard({ amount, activeCount }: MonthlyTotalCardProps)
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1,
     backgroundColor: '#4DB8A8',
     borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.md,
+    marginBottom: SPACING.md,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,

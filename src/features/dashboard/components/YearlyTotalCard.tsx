@@ -18,10 +18,10 @@ export function YearlyTotalCard({ amount }: YearlyTotalCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1,
     backgroundColor: COLORS.card,
     borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.md,
+    marginBottom: SPACING.md,
     borderWidth: 1,
     borderColor: COLORS.border,
     shadowColor: '#000',

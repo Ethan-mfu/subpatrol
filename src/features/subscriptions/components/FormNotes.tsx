@@ -14,7 +14,6 @@ export function FormNotes({ notes, onNotesChange }: FormNotesProps) {
     <Card style={styles.section}>
       <Text style={styles.sectionTitle}>Notes (Optional)</Text>
       <FormInput
-        label=""
         value={notes || ''}
         onChangeText={onNotesChange}
         placeholder="Add any additional notes..."

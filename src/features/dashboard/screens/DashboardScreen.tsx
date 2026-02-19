@@ -4,16 +4,13 @@ import { useNavigation } from '@react-navigation/native';
 import { useSubscriptionStore } from '../../../store/subscriptionStore';
 import { COLORS, SPACING, FONT_SIZES } from '../../../core/constants';
 import { ROUTES } from '../../../core/routes';
-import { Card } from '../../../components/Card';
-import { SummaryCard } from '../components/SummaryCard';
-import { UpcomingList } from '../components/UpcomingList';
-import { QuickStatsCard } from '../components/QuickStatsCard';
-import {
-  calculateMonthlyTotal,
-  formatCurrency,
-  sortByNextBilling,
-  daysUntilBilling,
-} from '../../../core/utils/subscriptionUtils';
+import { Button } from '../../../components/Button';
+import { DashboardHeader } from '../components/DashboardHeader';
+import { MonthlyTotalCard } from '../components/MonthlyTotalCard';
+import { YearlyTotalCard } from '../components/YearlyTotalCard';
+import { AlertBanner } from '../components/AlertBanner';
+import { UpcomingRenewalCard } from '../components/UpcomingRenewalCard';
+import { calculateMonthlyTotal, formatCurrency, sortByNextBilling } from '../../../core/utils/subscriptionUtils';
 
 export default function DashboardScreen() {
   const navigation = useNavigation();
@@ -24,15 +21,14 @@ export default function DashboardScreen() {
     fetchSubscriptions();
   }, []);
 
-  const activeSubscriptions = subscriptions.filter(
-    (sub) => sub.status === 'active' || sub.status === 'trial'
-  );
-
+  const activeSubscriptions = subscriptions.filter((sub) => sub.status === 'active' || sub.status === 'trial');
   const monthlyTotal = calculateMonthlyTotal(activeSubscriptions, userPreferences.currency);
-  const upcomingSubscriptions = sortByNextBilling(activeSubscriptions).slice(0, 3);
-  const urgentSubscriptions = activeSubscriptions.filter(
-    (sub) => daysUntilBilling(sub.nextBillingDate) <= sub.reminderDaysBefore
-  );
+  const yearlyTotal = monthlyTotal * 12;
+  const upcomingSubscriptions = sortByNextBilling(activeSubscriptions).slice(0, 5);
+  const trialSubscriptions = activeSubscriptions.filter(sub => sub.isTrial && sub.trialEndsDate);
+  const nextTrialEnding = trialSubscriptions.length > 0
+    ? trialSubscriptions.sort((a, b) => new Date(a.trialEndsDate!).getTime() - new Date(b.trialEndsDate!).getTime())[0]
+    : null;
 
   const handleSubscriptionPress = (id: string) => {
     // @ts-ignore
@@ -42,135 +38,72 @@ export default function DashboardScreen() {
     });
   };
 
+  const handleAddSubscription = () => {
+    // @ts-ignore
+    navigation.navigate(ROUTES.SUBSCRIPTIONS_TAB, {
+      screen: ROUTES.SUBSCRIPTION_FORM,
+    });
+  };
+
+  const formatTrialEndDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  };
+
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={isLoading} onRefresh={fetchSubscriptions} />
-      }
-    >
+    <ScrollView style={styles.container} refreshControl={<RefreshControl refreshing={isLoading} onRefresh={fetchSubscriptions} />}>
       <View style={styles.content}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>Dashboard</Text>
-            <Text style={styles.subtitle}>Welcome to SubPatrol</Text>
-          </View>
+        <DashboardHeader />
+
+        <View style={styles.summaryRow}>
+          <MonthlyTotalCard amount={formatCurrency(monthlyTotal, userPreferences.currency)} activeCount={activeSubscriptions.length} />
+          <View style={styles.cardSpacer} />
+          <YearlyTotalCard amount={formatCurrency(yearlyTotal, userPreferences.currency)} />
         </View>
 
-        {/* Statistics Cards */}
-        <SummaryCard
-          title="Active Subscriptions"
-          value={activeSubscriptions.length.toString()}
-          color={COLORS.primary}
-        />
-
-        <SummaryCard
-          title="Monthly Spending"
-          value={formatCurrency(monthlyTotal, userPreferences.currency)}
-          subtitle={`Across ${activeSubscriptions.length} active subscriptions`}
-          color={COLORS.success}
-        />
-
-        {urgentSubscriptions.length > 0 && (
-          <Card style={styles.alertCard}>
-            <Text style={styles.alertTitle}>⚠️ Upcoming Renewals</Text>
-            <Text style={styles.alertMessage}>
-              {urgentSubscriptions.length} subscription{urgentSubscriptions.length > 1 ? 's' : ''} renewing soon
-            </Text>
-          </Card>
+        {nextTrialEnding?.trialEndsDate && (
+          <AlertBanner title="Trial Ending Soon" message={`${nextTrialEnding.name} trial ends ${formatTrialEndDate(nextTrialEnding.trialEndsDate)}`} />
         )}
 
-        {/* Upcoming Subscriptions */}
-        {upcomingSubscriptions.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Next Renewals</Text>
-              <Pressable
-                onPress={() => navigation.navigate(ROUTES.SUBSCRIPTIONS_TAB as never)}
-                accessibilityLabel="View all subscriptions"
-                accessibilityRole="button"
-              >
-                <Text style={styles.seeAll}>See All</Text>
-              </Pressable>
-            </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <Button title="+ Add New Subscription" onPress={handleAddSubscription} variant="primary" size="large" style={styles.addButton} />
+        </View>
 
-            <UpcomingList
-              subscriptions={upcomingSubscriptions}
-              onPressItem={handleSubscriptionPress}
-              title=""
-            />
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Upcoming Renewals</Text>
+            <Pressable style={styles.calendarButton} onPress={() => {}} accessibilityRole="button" accessibilityLabel="View calendar">
+              <Text style={styles.calendarIcon}>📅</Text>
+            </Pressable>
           </View>
-        )}
-
-        {/* Quick Stats */}
-        <QuickStatsCard
-          totalSubscriptions={subscriptions.length}
-          activeTrials={subscriptions.filter((s) => s.isTrial).length}
-          cancelledCount={subscriptions.filter((s) => s.status === 'cancelled').length}
-        />
+          {upcomingSubscriptions.length > 0 ? (
+            upcomingSubscriptions.map((sub) => (
+              <UpcomingRenewalCard key={sub.id} subscription={sub} onPress={() => handleSubscriptionPress(sub.id)} />
+            ))
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No upcoming renewals</Text>
+            </View>
+          )}
+        </View>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  content: {
-    padding: SPACING.md,
-    paddingBottom: SPACING.xl,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: SPACING.lg,
-  },
-  title: {
-    fontSize: FONT_SIZES.xxxl,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
-  },
-  subtitle: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textSecondary,
-  },
-  alertCard: {
-    backgroundColor: '#FFF3CD',
-    borderWidth: 1,
-    borderColor: COLORS.warning,
-    marginBottom: SPACING.md,
-  },
-  alertTitle: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
-  },
-  alertMessage: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-  },
-  section: {
-    marginBottom: SPACING.lg,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  sectionTitle: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  seeAll: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
+  container: { flex: 1, backgroundColor: COLORS.background },
+  content: { padding: SPACING.md, paddingBottom: SPACING.xl },
+  summaryRow: { flexDirection: 'row', marginBottom: SPACING.md },
+  cardSpacer: { width: SPACING.md },
+  section: { marginBottom: SPACING.lg },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.md },
+  sectionTitle: { fontSize: FONT_SIZES.lg, fontWeight: '600', color: COLORS.text },
+  calendarButton: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
+  calendarIcon: { fontSize: 16 },
+  addButton: { width: '100%' },
+  emptyContainer: { padding: SPACING.lg, alignItems: 'center' },
+  emptyText: { fontSize: FONT_SIZES.md, color: COLORS.textSecondary },
 });

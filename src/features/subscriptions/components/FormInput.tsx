@@ -3,7 +3,7 @@ import { View, Text, TextInput, StyleSheet, TextInputProps, StyleProp, ViewStyle
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../core/constants';
 
 interface FormInputProps extends Omit<TextInputProps, 'style'> {
-  label: string;
+  label?: string;
   value: string;
   onChangeText: (text: string) => void;
   error?: string;

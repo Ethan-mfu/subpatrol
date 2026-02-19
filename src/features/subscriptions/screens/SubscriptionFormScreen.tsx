@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert, Pressable } from 'react-native';
+import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 import { useSubscriptionStore } from '../../../store/subscriptionStore';
 import { COLORS, SPACING, FONT_SIZES } from '../../../core/constants';
+import { ROUTES } from '../../../core/routes';
 import { Button } from '../../../components/Button';
 import { FormBasicInfo } from '../components/FormBasicInfo';
 import { FormPricingSection } from '../components/FormPricingSection';
@@ -33,18 +34,11 @@ export default function SubscriptionFormScreen() {
     reminderDaysBefore: existingSubscription?.reminderDaysBefore || 3,
     notes: existingSubscription?.notes || '',
   });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    if (!formData.name.trim()) {
-      Alert.alert('Error', 'Please enter a subscription name');
-      return;
-    }
-    if (!formData.price || parseFloat(formData.price) <= 0) {
-      Alert.alert('Error', 'Please enter a valid price');
-      return;
-    }
+    if (!formData.name.trim()) return Alert.alert('Error', 'Please enter a subscription name');
+    if (!formData.price || parseFloat(formData.price) <= 0) return Alert.alert('Error', 'Please enter a valid price');
 
     setIsSubmitting(true);
     try {
@@ -62,13 +56,18 @@ export default function SubscriptionFormScreen() {
         notes: formData.notes,
         iconColor: getCategoryColor(formData.category),
       };
-
       if (existingSubscription) {
         await updateSubscription(existingSubscription.id, subscriptionData);
       } else {
         await addSubscription(subscriptionData);
       }
-      navigation.goBack();
+      // Navigate to subscriptions list
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: ROUTES.SUBSCRIPTIONS_LIST }],
+        })
+      );
     } catch (error) {
       Alert.alert('Error', 'Failed to save subscription. Please try again.');
     } finally {
@@ -76,59 +75,38 @@ export default function SubscriptionFormScreen() {
     }
   };
 
-  const updateFormData = (field: keyof SubscriptionFormData, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const updateFormData = (field: keyof SubscriptionFormData, value: any) => setFormData((prev) => ({ ...prev, [field]: value }));
+
+  const handleCancel = () => {
+    // Navigate to subscriptions list
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: ROUTES.SUBSCRIPTIONS_LIST }],
+      })
+    );
   };
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <View style={styles.header}>
+        <Pressable onPress={handleCancel} style={styles.backButton} hitSlop={8}>
+          <Text style={styles.backIcon}>←</Text>
+        </Pressable>
+        <Text style={styles.headerTitle}>{existingSubscription ? 'Edit Subscription' : 'New Subscription'}</Text>
+        <View style={styles.headerSpacer} />
+      </View>
       <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
         <View style={styles.content}>
-          <Text style={styles.title}>{existingSubscription ? 'Edit Subscription' : 'Add Subscription'}</Text>
-
-          <FormBasicInfo
-            name={formData.name}
-            category={formData.category}
-            onNameChange={(value) => updateFormData('name', value)}
-            onCategoryChange={(value) => updateFormData('category', value)}
-          />
-          <FormPricingSection
-            price={formData.price}
-            currency={formData.currency}
-            billingCycle={formData.billingCycle}
-            onPriceChange={(value) => updateFormData('price', value)}
-            onCurrencyChange={(value) => updateFormData('currency', value)}
-            onBillingCycleChange={(value) => updateFormData('billingCycle', value)}
-          />
-          <FormBillingDates
-            nextBillingDate={formData.nextBillingDate}
-            isTrial={formData.isTrial}
-            trialEndsDate={formData.trialEndsDate}
-            onNextBillingDateChange={(date) => updateFormData('nextBillingDate', date)}
-            onTrialChange={(value) => {
-              updateFormData('isTrial', value);
-              if (!value) updateFormData('trialEndsDate', undefined);
-            }}
-            onTrialEndDateChange={(date) => updateFormData('trialEndsDate', date)}
-          />
-          <FormReminderStatus
-            reminderDaysBefore={formData.reminderDaysBefore}
-            status={formData.status}
-            onReminderChange={(value) => updateFormData('reminderDaysBefore', value)}
-            onStatusChange={(value) => updateFormData('status', value)}
-          />
-          <FormNotes notes={formData.notes || ''} onNotesChange={(value) => updateFormData('notes', value)} />
+          <FormBasicInfo name={formData.name} category={formData.category} onNameChange={(v) => updateFormData('name', v)} onCategoryChange={(v) => updateFormData('category', v)} />
+          <FormPricingSection price={formData.price} currency={formData.currency} billingCycle={formData.billingCycle} onPriceChange={(v) => updateFormData('price', v)} onCurrencyChange={(v) => updateFormData('currency', v)} onBillingCycleChange={(v) => updateFormData('billingCycle', v)} />
+          <FormBillingDates nextBillingDate={formData.nextBillingDate} isTrial={formData.isTrial} trialEndsDate={formData.trialEndsDate} onNextBillingDateChange={(d) => updateFormData('nextBillingDate', d)} onTrialChange={(v) => { updateFormData('isTrial', v); if (!v) updateFormData('trialEndsDate', undefined); }} onTrialEndDateChange={(d) => updateFormData('trialEndsDate', d)} />
+          <FormReminderStatus reminderDaysBefore={formData.reminderDaysBefore} status={formData.status} onReminderChange={(v) => updateFormData('reminderDaysBefore', v)} onStatusChange={(v) => updateFormData('status', v)} />
+          <FormNotes notes={formData.notes || ''} onNotesChange={(v) => updateFormData('notes', v)} />
 
           <View style={styles.actions}>
-            <Button title="Cancel" onPress={() => navigation.goBack()} variant="outline" size="large" style={styles.actionButton} />
-            <Button
-              title={existingSubscription ? 'Update' : 'Add Subscription'}
-              onPress={handleSubmit}
-              variant="primary"
-              size="large"
-              loading={isSubmitting}
-              style={styles.actionButton}
-            />
+            <Button title="Cancel" onPress={handleCancel} variant="outline" size="large" style={styles.actionButton} />
+            <Button title={existingSubscription ? 'Update' : 'Add Subscription'} onPress={handleSubmit} variant="primary" size="large" loading={isSubmitting} style={styles.actionButton} />
           </View>
         </View>
       </ScrollView>
@@ -137,29 +115,15 @@ export default function SubscriptionFormScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  content: {
-    padding: SPACING.md,
-    paddingBottom: SPACING.xl,
-  },
-  title: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: SPACING.lg,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: SPACING.md,
-    marginTop: SPACING.lg,
-  },
-  actionButton: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: COLORS.background },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.md, paddingVertical: SPACING.md, backgroundColor: COLORS.card, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  backButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  backIcon: { fontSize: 28, color: COLORS.primary },
+  headerTitle: { fontSize: FONT_SIZES.lg, fontWeight: '600', color: COLORS.text },
+  headerSpacer: { width: 40 },
+  scrollView: { flex: 1 },
+  content: { padding: SPACING.md, paddingBottom: SPACING.xl },
+  section: { marginBottom: SPACING.xs },
+  actions: { flexDirection: 'row', gap: SPACING.md, marginTop: SPACING.lg },
+  actionButton: { flex: 1 },
 });

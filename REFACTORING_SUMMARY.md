@@ -46,13 +46,18 @@ Split large code files (> 200 lines) into smaller, reusable components per Week 
      - `TabbedFilter.tsx` (107 lines)
      - `CategoryFilter.tsx` (77 lines)
 
-6. **DashboardScreen.tsx**: **176 lines** ✅
+6. **DashboardScreen.tsx**: **107 lines** ✅
    - Before: ~240 lines
-   - Reduction: **64 lines (27% reduction)**
+   - Reduction: **133 lines (55% reduction)**
    - Extracted components:
-     - `SummaryCard.tsx` (59 lines)
-     - `UpcomingList.tsx` (51 lines)
-     - `QuickStatsCard.tsx` (69 lines)
+     - `DashboardHeader.tsx` (61 lines)
+     - `MonthlyTotalCard.tsx` (49 lines)
+     - `YearlyTotalCard.tsx` (48 lines)
+     - `AlertBanner.tsx` (53 lines)
+     - `UpcomingRenewalCard.tsx` (120 lines)
+     - `SummaryCard.tsx` (59 lines) - legacy
+     - `UpcomingList.tsx` (51 lines) - legacy
+     - `QuickStatsCard.tsx` (69 lines) - legacy
 
 7. **SubscriptionFormScreen.tsx**: **165 lines** ✅
    - Before: ~594 lines
@@ -70,7 +75,7 @@ None! All screens are now under 200 lines. ✅
 
 ## New Components Created
 
-### Feature Components (28 files)
+### Feature Components (33 files)
 
 **Subscriptions Feature** (16 components):
 - `src/features/subscriptions/components/SearchBar.tsx` (43 lines)
@@ -90,10 +95,15 @@ None! All screens are now under 200 lines. ✅
 - `src/features/subscriptions/components/FormReminderStatus.tsx` (147 lines)
 - `src/features/subscriptions/components/FormNotes.tsx` (45 lines)
 
-**Dashboard Feature** (3 components):
-- `src/features/dashboard/components/SummaryCard.tsx` (59 lines)
-- `src/features/dashboard/components/UpcomingList.tsx` (51 lines)
-- `src/features/dashboard/components/QuickStatsCard.tsx` (69 lines)
+**Dashboard Feature** (8 components):
+- `src/features/dashboard/components/DashboardHeader.tsx` (61 lines)
+- `src/features/dashboard/components/MonthlyTotalCard.tsx` (49 lines)
+- `src/features/dashboard/components/YearlyTotalCard.tsx` (48 lines)
+- `src/features/dashboard/components/AlertBanner.tsx` (53 lines)
+- `src/features/dashboard/components/UpcomingRenewalCard.tsx` (120 lines)
+- `src/features/dashboard/components/SummaryCard.tsx` (59 lines) - legacy
+- `src/features/dashboard/components/UpcomingList.tsx` (51 lines) - legacy
+- `src/features/dashboard/components/QuickStatsCard.tsx` (69 lines) - legacy
 
 **Insights Feature** (4 components):
 - `src/features/insights/components/SpendingHeroCard.tsx` (63 lines)
@@ -165,9 +175,9 @@ Possible future improvements:
 
 ## Summary
 
-Successfully reduced ALL 7 screens to under 200 lines by extracting 28 reusable components. Created a comprehensive set of form components (FormInput, FormPicker, FormDatePicker, FormBasicInfo, FormPricingSection, FormBillingDates, FormReminderStatus, FormNotes), analytics components (SpendingHeroCard, CategoryBreakdownList, BillingCycleChart, QuickStatsGrid), subscription detail components (SubscriptionHeader, PriceInfoSection, BillingInfoSection, StatusInfoSection, SubscriptionActions), and settings components (NotificationSettings, CurrencySelector, AboutSection) that can be reused throughout the app. The refactoring significantly improves code organization, reusability, and maintainability.
+Successfully reduced ALL 7 screens to under 200 lines by extracting 33 reusable components. Created a comprehensive set of form components (FormInput, FormPicker, FormDatePicker, FormBasicInfo, FormPricingSection, FormBillingDates, FormReminderStatus, FormNotes), analytics components (SpendingHeroCard, CategoryBreakdownList, BillingCycleChart, QuickStatsGrid), subscription detail components (SubscriptionHeader, PriceInfoSection, BillingInfoSection, StatusInfoSection, SubscriptionActions), dashboard components (DashboardHeader, MonthlyTotalCard, YearlyTotalCard, AlertBanner, UpcomingRenewalCard), and settings components (NotificationSettings, CurrencySelector, AboutSection) that can be reused throughout the app. The refactoring significantly improves code organization, reusability, and maintainability.
 
-**Total lines saved**: ~1,340 lines across all screens
-**New component files**: 28 files (all < 200 lines)
+**Total lines saved**: ~1,473 lines across all screens
+**New component files**: 33 files (all < 200 lines)
 **Screens now compliant**: 7 out of 7 screens (100%) ✅
 **Remaining work**: None - all requirements met!

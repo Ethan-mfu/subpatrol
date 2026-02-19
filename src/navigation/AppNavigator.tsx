@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Text } from 'react-native';
 
 import { ROUTES } from '../core/routes';
 
@@ -29,21 +30,18 @@ const SubscriptionsStack = createNativeStackNavigator();
 // Subscriptions Stack Navigator
 function SubscriptionsNavigator() {
   return (
-    <SubscriptionsStack.Navigator>
+    <SubscriptionsStack.Navigator screenOptions={{ headerShown: false }}>
       <SubscriptionsStack.Screen
         name={ROUTES.SUBSCRIPTIONS_LIST}
         component={SubscriptionsScreen}
-        options={{ title: 'Subscriptions' }}
       />
       <SubscriptionsStack.Screen
         name={ROUTES.SUBSCRIPTION_DETAIL}
         component={SubscriptionDetailScreen}
-        options={{ title: 'Subscription Detail' }}
       />
       <SubscriptionsStack.Screen
         name={ROUTES.SUBSCRIPTION_FORM}
         component={SubscriptionFormScreen}
-        options={{ title: 'Add/Edit Subscription' }}
       />
     </SubscriptionsStack.Navigator>
   );
@@ -55,27 +53,49 @@ function MainTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        tabBarActiveTintColor: '#007AFF',
+        tabBarInactiveTintColor: '#999999',
       }}
     >
       <Tab.Screen
         name={ROUTES.DASHBOARD_TAB}
         component={DashboardScreen}
-        options={{ title: 'Dashboard' }}
+        options={{
+          title: 'Dashboard',
+          tabBarIcon: ({ color, size }) => (
+            <Text style={{ fontSize: size * 1.2 }}>🏠</Text>
+          ),
+        }}
       />
       <Tab.Screen
         name={ROUTES.SUBSCRIPTIONS_TAB}
         component={SubscriptionsNavigator}
-        options={{ title: 'Subscriptions' }}
+        options={{
+          title: 'Subscriptions',
+          tabBarIcon: ({ color, size }) => (
+            <Text style={{ fontSize: size * 1.2 }}>💳</Text>
+          ),
+        }}
       />
       <Tab.Screen
         name={ROUTES.INSIGHTS_TAB}
         component={InsightsScreen}
-        options={{ title: 'Insights' }}
+        options={{
+          title: 'Insights',
+          tabBarIcon: ({ color, size }) => (
+            <Text style={{ fontSize: size * 1.2 }}>📊</Text>
+          ),
+        }}
       />
       <Tab.Screen
         name={ROUTES.SETTINGS_TAB}
         component={SettingsScreen}
-        options={{ title: 'Settings' }}
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ color, size }) => (
+            <Text style={{ fontSize: size * 1.2 }}>⚙️</Text>
+          ),
+        }}
       />
     </Tab.Navigator>
   );

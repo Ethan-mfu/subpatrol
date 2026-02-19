@@ -16,7 +16,7 @@ import { EmptyState } from '../../../core/components/EmptyState';
 import { Subscription, SubscriptionCategory } from '../../../models/subscription';
 import { SearchBar } from '../components/SearchBar';
 import { TabbedFilter, FilterTab } from '../components/TabbedFilter';
-import { CategoryFilter } from '../components/CategoryFilter';
+import { CategoryDropdown } from '../components/CategoryDropdown';
 
 export default function SubscriptionsScreen() {
   const navigation = useNavigation();
@@ -95,7 +95,7 @@ export default function SubscriptionsScreen() {
           counts={counts}
         />
 
-        <CategoryFilter
+        <CategoryDropdown
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
         />

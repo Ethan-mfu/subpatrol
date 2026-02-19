@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSubscriptionStore } from '../../../store/subscriptionStore';
 import { COLORS, SPACING, FONT_SIZES } from '../../../core/constants';
@@ -43,51 +43,60 @@ export default function SubscriptionDetailScreen() {
   const isUrgent = daysUntil <= subscription.reminderDaysBefore && daysUntil >= 0;
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <SubscriptionHeader
-          name={subscription.name}
-          category={subscription.category}
-          isTrial={subscription.isTrial}
-          isUrgent={isUrgent}
-          daysUntilBilling={daysUntil}
-        />
-
-        <PriceInfoSection
-          price={subscription.price}
-          currency={subscription.currency}
-          billingCycle={subscription.billingCycle}
-        />
-
-        <BillingInfoSection
-          nextBillingDate={subscription.nextBillingDate}
-          daysUntilBilling={daysUntil}
-          reminderDaysBefore={subscription.reminderDaysBefore}
-          isTrial={subscription.isTrial}
-          trialEndsDate={subscription.trialEndsDate}
-          isUrgent={isUrgent}
-        />
-
-        <StatusInfoSection
-          status={subscription.status}
-          createdAt={subscription.createdAt}
-          updatedAt={subscription.updatedAt}
-        />
-
-        {subscription.notes && (
-          <Card style={styles.section}>
-            <Text style={styles.sectionTitle}>Notes</Text>
-            <Text style={styles.notesText}>{subscription.notes}</Text>
-          </Card>
-        )}
-
-        <SubscriptionActions
-          subscriptionName={subscription.name}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Pressable onPress={() => navigation.goBack()} style={styles.backButton} hitSlop={8}>
+          <Text style={styles.backIcon}>←</Text>
+        </Pressable>
+        <Text style={styles.headerTitle}>Subscription Details</Text>
+        <View style={styles.headerSpacer} />
       </View>
-    </ScrollView>
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.content}>
+          <SubscriptionHeader
+            name={subscription.name}
+            category={subscription.category}
+            isTrial={subscription.isTrial}
+            isUrgent={isUrgent}
+            daysUntilBilling={daysUntil}
+          />
+
+          <PriceInfoSection
+            price={subscription.price}
+            currency={subscription.currency}
+            billingCycle={subscription.billingCycle}
+          />
+
+          <BillingInfoSection
+            nextBillingDate={subscription.nextBillingDate}
+            daysUntilBilling={daysUntil}
+            reminderDaysBefore={subscription.reminderDaysBefore}
+            isTrial={subscription.isTrial}
+            trialEndsDate={subscription.trialEndsDate}
+            isUrgent={isUrgent}
+          />
+
+          <StatusInfoSection
+            status={subscription.status}
+            createdAt={subscription.createdAt}
+            updatedAt={subscription.updatedAt}
+          />
+
+          {subscription.notes && (
+            <Card style={styles.section}>
+              <Text style={styles.sectionTitle}>Notes</Text>
+              <Text style={styles.notesText}>{subscription.notes}</Text>
+            </Card>
+          )}
+
+          <SubscriptionActions
+            subscriptionName={subscription.name}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -95,6 +104,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    backgroundColor: COLORS.card,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backIcon: {
+    fontSize: 28,
+    color: COLORS.primary,
+  },
+  headerTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  scrollView: {
+    flex: 1,
   },
   content: {
     padding: SPACING.md,

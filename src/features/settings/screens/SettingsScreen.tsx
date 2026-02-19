@@ -1,35 +1,56 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useSubscriptionStore } from '../../../store/subscriptionStore';
+import { COLORS, SPACING, FONT_SIZES } from '../../../core/constants';
+import { NotificationSettings } from '../components/NotificationSettings';
+import { CurrencySelector } from '../components/CurrencySelector';
+import { RegionalSettings } from '../components/RegionalSettings';
+import { AboutSection } from '../components/AboutSection';
+import { SettingInfoCard } from '../components/SettingInfoCard';
 
 export default function SettingsScreen() {
+  const { userPreferences, updateUserPreferences } = useSubscriptionStore();
+
+  const handleCurrencyChange = (currencyCode: string) => {
+    updateUserPreferences({ currency: currencyCode });
+  };
+
+  const handleNotificationToggle = (value: boolean) => {
+    updateUserPreferences({ notificationsEnabled: value });
+  };
+
+  const handleReminderChange = (days: number) => {
+    updateUserPreferences({ defaultReminderDaysBefore: days });
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Settings</Text>
-        
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preferences</Text>
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Currency</Text>
-            <Text style={styles.settingValue}>THB (฿)</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Timezone</Text>
-            <Text style={styles.settingValue}>Asia/Bangkok</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Default Reminder</Text>
-            <Text style={styles.settingValue}>3 days before</Text>
-          </TouchableOpacity>
+        <View style={styles.header}>
+          <Text style={styles.title}>Settings</Text>
+          <Text style={styles.subtitle}>Manage your preferences</Text>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Notifications</Text>
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Push Notifications</Text>
-            <Text style={styles.settingValue}>Enabled</Text>
-          </TouchableOpacity>
-        </View>
+        <NotificationSettings
+          notificationsEnabled={userPreferences.notificationsEnabled}
+          defaultReminderDaysBefore={userPreferences.defaultReminderDaysBefore}
+          onNotificationToggle={handleNotificationToggle}
+          onReminderChange={handleReminderChange}
+        />
+
+        <CurrencySelector
+          selectedCurrency={userPreferences.currency}
+          onCurrencyChange={handleCurrencyChange}
+        />
+
+        <RegionalSettings timezone={userPreferences.timezone} />
+
+        <AboutSection />
+
+        <SettingInfoCard
+          title="Tip"
+          message="Enable notifications to never miss a subscription renewal. Set custom reminders for each subscription in the edit screen."
+        />
       </View>
     </ScrollView>
   );
@@ -38,43 +59,23 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.background,
   },
   content: {
-    padding: 20,
+    padding: SPACING.md,
+    paddingBottom: SPACING.xl,
+  },
+  header: {
+    marginBottom: SPACING.lg,
   },
   title: {
-    fontSize: 28,
+    fontSize: FONT_SIZES.xxxl,
     fontWeight: 'bold',
-    marginBottom: 24,
-    color: '#333',
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
   },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  settingItem: {
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  settingLabel: {
-    fontSize: 16,
-    color: '#333',
-  },
-  settingValue: {
-    fontSize: 16,
-    color: '#007AFF',
+  subtitle: {
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textSecondary,
   },
 });

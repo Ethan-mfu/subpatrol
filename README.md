@@ -1,6 +1,6 @@
 # SubPatrol - Subscription Tracker App
 
-A React Native (Expo) mobile app built with TypeScript to help university students in Thailand track their subscriptions and free trials, with reminders before renewals to avoid unwanted payments.
+A React Native (Expo) mobile app built with TypeScript to help university students track their subscriptions and free trials, with reminders before renewals to avoid unwanted payments.
 
 ## 🎯 Features
 
@@ -267,8 +267,8 @@ Login → Main Tabs
 
 ## 👤 Author
 
-Senior React Native (Expo) Engineer
-Building SubPatrol for Thai university students
+Name: Than Htike Zaw
+Std_id: 6731503086
 
 ---
 

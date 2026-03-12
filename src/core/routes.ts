@@ -1,4 +1,7 @@
 export const ROUTES = {
+  // Onboarding
+  LANDING: 'Landing',
+
   // Auth
   LOGIN: 'Login',
 

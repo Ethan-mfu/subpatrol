@@ -6,8 +6,8 @@ import { Text } from 'react-native';
 
 import { ROUTES } from '../core/routes';
 
-// Auth Screens
-import LoginScreen from '../features/auth/screens/LoginScreen';
+// Onboarding Screens
+import LandingScreen from '../features/onboarding/screens/LandingScreen';
 
 // Dashboard Screens
 import DashboardScreen from '../features/dashboard/screens/DashboardScreen';
@@ -103,15 +103,18 @@ function MainTabs() {
 
 // Root Navigator
 export default function AppNavigator() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [hasSeenLanding, setHasSeenLanding] = useState(false);
 
   return (
     <NavigationContainer>
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
-        {!isAuthenticated ? (
-          <RootStack.Screen name={ROUTES.LOGIN}>
+        {!hasSeenLanding ? (
+          <RootStack.Screen name={ROUTES.LANDING}>
             {(props) => (
-              <LoginScreen {...props} onLogin={() => setIsAuthenticated(true)} />
+              <LandingScreen 
+                {...props} 
+                onGetStarted={() => setHasSeenLanding(true)} 
+              />
             )}
           </RootStack.Screen>
         ) : (

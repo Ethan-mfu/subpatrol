@@ -21,13 +21,28 @@ export default function SignupScreen({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
 
+  const isValidEmail = (value: string) => /^\S+@\S+\.\S+$/.test(value);
+
   const handleSignup = async () => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password || !confirmPassword) {
+      setLocalError('Please fill in all fields.');
+      return;
+    }
+    if (!isValidEmail(trimmedEmail)) {
+      setLocalError('Please enter a valid email address.');
+      return;
+    }
+    if (password.length < 6) {
+      setLocalError('Password should be at least 6 characters.');
+      return;
+    }
     if (password !== confirmPassword) {
       setLocalError('Passwords do not match.');
       return;
     }
     setLocalError(null);
-    await onSignupComplete(email, password);
+    await onSignupComplete(trimmedEmail, password);
   };
 
   return (
@@ -42,7 +57,10 @@ export default function SignupScreen({
         autoCorrect={false}
         keyboardType="email-address"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(value) => {
+          setEmail(value);
+          if (localError) setLocalError(null);
+        }}
       />
 
       <TextInput
@@ -50,7 +68,10 @@ export default function SignupScreen({
         placeholder="Password"
         secureTextEntry
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(value) => {
+          setPassword(value);
+          if (localError) setLocalError(null);
+        }}
       />
 
       <TextInput
@@ -58,7 +79,10 @@ export default function SignupScreen({
         placeholder="Confirm Password"
         secureTextEntry
         value={confirmPassword}
-        onChangeText={setConfirmPassword}
+        onChangeText={(value) => {
+          setConfirmPassword(value);
+          if (localError) setLocalError(null);
+        }}
       />
 
       {localError ? <Text style={styles.errorText}>{localError}</Text> : null}

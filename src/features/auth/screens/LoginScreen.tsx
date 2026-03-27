@@ -18,9 +18,23 @@ export default function LoginScreen({
 }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  const isValidEmail = (value: string) => /^\S+@\S+\.\S+$/.test(value);
 
   const handleLogin = async () => {
-    await onLogin(email, password);
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) {
+      setLocalError('Please enter both email and password.');
+      return;
+    }
+    if (!isValidEmail(trimmedEmail)) {
+      setLocalError('Please enter a valid email address.');
+      return;
+    }
+
+    setLocalError(null);
+    await onLogin(trimmedEmail, password);
   };
 
   return (
@@ -35,7 +49,10 @@ export default function LoginScreen({
         autoCorrect={false}
         keyboardType="email-address"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(value) => {
+          setEmail(value);
+          if (localError) setLocalError(null);
+        }}
       />
 
       <TextInput
@@ -43,10 +60,14 @@ export default function LoginScreen({
         placeholder="Password"
         secureTextEntry
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(value) => {
+          setPassword(value);
+          if (localError) setLocalError(null);
+        }}
       />
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {localError ? <Text style={styles.errorText}>{localError}</Text> : null}
+      {!localError && error ? <Text style={styles.errorText}>{error}</Text> : null}
 
       <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign In</Text>}

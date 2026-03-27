@@ -27,21 +27,45 @@ interface AuthStore {
   logout: () => Promise<void>;
 }
 
-const normalizeAuthError = (message: string): string => {
-  if (message.includes('invalid-credential') || message.includes('wrong-password')) {
+const normalizeAuthError = (error: unknown): string => {
+  const code =
+    typeof error === 'object' && error !== null && 'code' in error
+      ? String((error as { code?: unknown }).code || '').toLowerCase()
+      : '';
+
+  const message =
+    error instanceof Error
+      ? error.message.toLowerCase()
+      : String(error || '').toLowerCase();
+
+  const has = (fragment: string) => code.includes(fragment) || message.includes(fragment);
+
+  if (has('invalid-credential') || has('wrong-password') || has('invalid-login-credentials')) {
     return 'Invalid email or password.';
   }
-  if (message.includes('user-not-found')) {
+  if (has('user-not-found')) {
     return 'No account found for this email.';
   }
-  if (message.includes('email-already-in-use')) {
+  if (has('email-already-in-use')) {
     return 'This email is already in use.';
   }
-  if (message.includes('weak-password')) {
+  if (has('weak-password')) {
     return 'Password should be at least 6 characters.';
   }
-  if (message.includes('invalid-email')) {
+  if (has('invalid-email')) {
     return 'Please enter a valid email address.';
+  }
+  if (has('too-many-requests')) {
+    return 'Too many attempts. Please wait and try again.';
+  }
+  if (has('network-request-failed')) {
+    return 'Network error. Please check your internet connection.';
+  }
+  if (has('user-disabled')) {
+    return 'This account has been disabled. Please contact support.';
+  }
+  if (has('operation-not-allowed')) {
+    return 'This sign-in method is currently unavailable.';
   }
   return 'Authentication failed. Please try again.';
 };
@@ -97,8 +121,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      set({ loading: false, error: normalizeAuthError(message) });
+      set({ loading: false, error: normalizeAuthError(error) });
       throw error;
     }
   },
@@ -108,8 +131,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       await createUserWithEmailAndPassword(auth, email.trim(), password);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      set({ loading: false, error: normalizeAuthError(message) });
+      set({ loading: false, error: normalizeAuthError(error) });
       throw error;
     }
   },

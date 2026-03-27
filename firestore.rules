@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function allowedCurrencies() {
+      return ['THB', 'USD', 'EUR', 'GBP'];
+    }
+
+    function allowedCategories() {
+      return ['streaming', 'music', 'productivity', 'fitness', 'gaming', 'education', 'cloud', 'other'];
+    }
+
+    function allowedBillingCycles() {
+      return ['daily', 'weekly', 'monthly', 'yearly'];
+    }
+
+    function allowedStatuses() {
+      return ['active', 'trial', 'cancelled', 'expired'];
+    }
+
+    function allowedReminderDays() {
+      return [1, 3, 7, 14];
+    }
+
+    function hasOnlyAllowedSubscriptionKeys(data) {
+      return data.keys().hasOnly([
+        'name',
+        'category',
+        'price',
+        'currency',
+        'billingCycle',
+        'nextBillingDate',
+        'isTrial',
+        'trialEndsDate',
+        'status',
+        'reminderDaysBefore',
+        'notes',
+        'iconColor',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function hasRequiredCreateKeys(data) {
+      return data.keys().hasAll([
+        'name',
+        'category',
+        'price',
+        'currency',
+        'billingCycle',
+        'nextBillingDate',
+        'isTrial',
+        'status',
+        'reminderDaysBefore',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function validOptionalText(data, field, maxSize) {
+      return !(field in data) || (data[field] is string && data[field].size() <= maxSize);
+    }
+
+    function validTrialFields(data) {
+      return data.isTrial == false
+        ? !('trialEndsDate' in data)
+        : ('trialEndsDate' in data && data.trialEndsDate is string && data.trialEndsDate.size() > 0);
+    }
+
+    function validSubscriptionData(data) {
+      return hasOnlyAllowedSubscriptionKeys(data)
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.category in allowedCategories()
+        && data.price is number && data.price > 0 && data.price <= 1000000
+        && data.currency in allowedCurrencies()
+        && data.billingCycle in allowedBillingCycles()
+        && data.nextBillingDate is string && data.nextBillingDate.size() > 0
+        && data.isTrial is bool
+        && data.status in allowedStatuses()
+        && data.reminderDaysBefore in allowedReminderDays()
+        && validOptionalText(data, 'notes', 500)
+        && validOptionalText(data, 'iconColor', 20)
+        && validTrialFields(data)
+        && data.createdAt is string && data.createdAt.size() > 0
+        && data.updatedAt is string && data.updatedAt.size() > 0;
+    }
+
+    match /users/{userId}/subscriptions/{subscriptionId} {
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && hasRequiredCreateKeys(request.resource.data)
+        && validSubscriptionData(request.resource.data);
+
+      allow update: if isOwner(userId)
+        && validSubscriptionData(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt;
+
+      allow delete: if isOwner(userId);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

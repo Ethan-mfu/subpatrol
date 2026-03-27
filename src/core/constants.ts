@@ -55,6 +55,15 @@ export const CURRENCIES = [
   { code: 'GBP', symbol: '£', name: 'British Pound' },
 ];
 
+// Static reference rates: value of 1 unit of currency in USD.
+// Keep this simple for offline/demo use; replace with live rates later if needed.
+export const EXCHANGE_RATES_TO_USD: Record<string, number> = {
+  USD: 1,
+  THB: 0.0278,
+  EUR: 1.09,
+  GBP: 1.27,
+};
+
 export const BILLING_CYCLES = [
   { value: 'daily' as const, label: 'Daily' },
   { value: 'weekly' as const, label: 'Weekly' },

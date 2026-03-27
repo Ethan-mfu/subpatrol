@@ -1,5 +1,5 @@
 import { Subscription, BillingCycle } from '../../models/subscription';
-import { CURRENCIES } from '../constants';
+import { CURRENCIES, EXCHANGE_RATES_TO_USD } from '../constants';
 import { fromStableDateISOString, toLocalStartOfDay } from './dateUtils';
 
 /**
@@ -66,6 +66,23 @@ export function getMonthlyEquivalent(price: number, cycle: BillingCycle): number
 }
 
 /**
+ * Convert between supported currencies using static USD reference rates.
+ */
+export function convertCurrencyAmount(amount: number, fromCurrency: string, toCurrency: string): number {
+  if (fromCurrency === toCurrency) return amount;
+
+  const fromRate = EXCHANGE_RATES_TO_USD[fromCurrency];
+  const toRate = EXCHANGE_RATES_TO_USD[toCurrency];
+
+  if (!fromRate || !toRate) {
+    return 0;
+  }
+
+  const amountInUsd = amount * fromRate;
+  return amountInUsd / toRate;
+}
+
+/**
  * Calculate total monthly spending across all subscriptions
  */
 export function calculateMonthlyTotal(subscriptions: Subscription[], targetCurrency: string = 'THB'): number {
@@ -73,13 +90,8 @@ export function calculateMonthlyTotal(subscriptions: Subscription[], targetCurre
     if (sub.status === 'cancelled' || sub.status === 'expired') return total;
     
     const monthlyAmount = getMonthlyEquivalent(sub.price, sub.billingCycle);
-    
-    // TODO: Add currency conversion when implementing backend
-    // For now, only sum subscriptions in the same currency
-    if (sub.currency === targetCurrency) {
-      return total + monthlyAmount;
-    }
-    return total;
+
+    return total + convertCurrencyAmount(monthlyAmount, sub.currency, targetCurrency);
   }, 0);
 }
 

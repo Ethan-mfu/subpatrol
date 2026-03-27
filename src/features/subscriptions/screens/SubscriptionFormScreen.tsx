@@ -70,7 +70,8 @@ export default function SubscriptionFormScreen() {
         })
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to save subscription. Please try again.');
+      const message = error instanceof Error ? error.message : 'Failed to save subscription. Please try again.';
+      Alert.alert('Error', message);
     } finally {
       setIsSubmitting(false);
     }

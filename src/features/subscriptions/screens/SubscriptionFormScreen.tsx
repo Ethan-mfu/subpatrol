@@ -12,6 +12,7 @@ import { FormReminderStatus } from '../components/FormReminderStatus';
 import { FormNotes } from '../components/FormNotes';
 import { SubscriptionFormData } from '../../../models/subscription';
 import { getCategoryColor } from '../../../core/utils/subscriptionUtils';
+import { fromStableDateISOString, toStableDateISOString } from '../../../core/utils/dateUtils';
 
 export default function SubscriptionFormScreen() {
   const navigation = useNavigation();
@@ -27,9 +28,9 @@ export default function SubscriptionFormScreen() {
     price: existingSubscription?.price.toString() || '',
     currency: existingSubscription?.currency || 'THB',
     billingCycle: existingSubscription?.billingCycle || 'monthly',
-    nextBillingDate: existingSubscription ? new Date(existingSubscription.nextBillingDate) : new Date(),
+    nextBillingDate: existingSubscription ? fromStableDateISOString(existingSubscription.nextBillingDate) : new Date(),
     isTrial: existingSubscription?.isTrial || false,
-    trialEndsDate: existingSubscription?.trialEndsDate ? new Date(existingSubscription.trialEndsDate) : undefined,
+    trialEndsDate: existingSubscription?.trialEndsDate ? fromStableDateISOString(existingSubscription.trialEndsDate) : undefined,
     status: existingSubscription?.status || 'active',
     reminderDaysBefore: existingSubscription?.reminderDaysBefore || 3,
     notes: existingSubscription?.notes || '',
@@ -48,9 +49,9 @@ export default function SubscriptionFormScreen() {
         price: parseFloat(formData.price),
         currency: formData.currency,
         billingCycle: formData.billingCycle,
-        nextBillingDate: formData.nextBillingDate.toISOString(),
+        nextBillingDate: toStableDateISOString(formData.nextBillingDate),
         isTrial: formData.isTrial,
-        trialEndsDate: formData.trialEndsDate?.toISOString(),
+        trialEndsDate: formData.trialEndsDate ? toStableDateISOString(formData.trialEndsDate) : undefined,
         status: formData.status,
         reminderDaysBefore: formData.reminderDaysBefore,
         notes: formData.notes,

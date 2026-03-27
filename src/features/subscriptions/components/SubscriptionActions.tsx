@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Alert } from 'react-native';
+import { View, Alert, Platform } from 'react-native';
 import { StyleSheet } from 'react-native';
 import { Button } from '../../../components/Button';
 import { SPACING } from '../../../core/constants';
@@ -16,6 +16,16 @@ export function SubscriptionActions({
   onDelete 
 }: SubscriptionActionsProps) {
   const handleDelete = () => {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(
+        `Are you sure you want to delete ${subscriptionName}?`
+      );
+      if (confirmed) {
+        onDelete();
+      }
+      return;
+    }
+
     Alert.alert(
       'Delete Subscription',
       `Are you sure you want to delete ${subscriptionName}?`,

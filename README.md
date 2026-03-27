@@ -5,17 +5,20 @@ A React Native (Expo) mobile app built with TypeScript to help university studen
 ## 🎯 Features
 
 ### Core Screens
-- **Login Screen** - Simple authentication flow with centered button
+- **Landing Screen** - Product intro with features and get started CTA
+- **Login Screen** - Email/password sign-in plus guest mode
+- **Signup Screen** - Account creation flow
 - **Dashboard** - Overview of subscriptions with stats and upcoming renewals
 - **Subscriptions List** - Comprehensive list with advanced filtering
 - **Subscription Detail** - Detailed view of individual subscriptions
 - **Add/Edit Form** - Complex form for managing subscriptions
 - **Insights** - Analytics and spending breakdown
-- **Settings** - User preferences management
+- **Settings** - User preferences + profile/account section
 
 ### Key Capabilities
 ✅ **State Management** - Zustand for global state  
 ✅ **TypeScript** - Full type safety throughout the app  
+✅ **Authentication** - Firebase Auth (email/password + guest mode)  
 ✅ **Mock Data** - 7 sample subscriptions for prototype  
 ✅ **Advanced Filtering** - Filter by status, category, and search  
 ✅ **Complex Form** - Multi-field form with date pickers, switches, and validation  
@@ -38,6 +41,7 @@ src/
 │   └── utils/
 │       └── subscriptionUtils.ts
 ├── features/             # Feature-based modules
+│   ├── onboarding/screens/
 │   ├── auth/screens/
 │   ├── dashboard/screens/
 │   ├── subscriptions/screens/
@@ -48,11 +52,14 @@ src/
 │   └── user.ts          # User preferences model
 ├── navigation/
 │   └── AppNavigator.tsx  # Navigation setup
+├── config/
+│   └── firebase.ts       # Firebase app/auth initialization
 ├── services/
 │   ├── api.ts           # API service (mock for now)
 │   └── storage.ts       # Storage service with mock data
 └── store/
-    └── subscriptionStore.ts  # Zustand store
+  ├── authStore.ts          # Auth state (firebase + guest)
+  └── subscriptionStore.ts  # Subscription state
 ```
 
 ## 📊 Data Models
@@ -181,6 +188,7 @@ src/
 - **Currency**: Selectable list with checkmarks (THB, USD, EUR, GBP)
 - **Regional**: Timezone display
 - **About**: Version, app name, purpose
+- **Profile Card**: Signed-in or guest status and account hint
 - **Info Card**: Tips for users
 
 ## 🔧 Technical Implementation
@@ -206,8 +214,8 @@ const { subscriptions, isLoading, fetchSubscriptions, addSubscription } =
 - Insights
 - Settings
 
-// Authentication Flow
-Login → Main Tabs
+// Entry and Authentication Flow
+Landing → Login/Signup/Continue as Guest → Main Tabs
 ```
 
 ### Utility Functions
@@ -259,7 +267,9 @@ Login → Main Tabs
 ## 📝 Notes
 
 - **Week 4 Implementation**: Uses mock data and local storage
-- **Production Ready**: Replace `apiService` with actual REST calls
+- **Auth**: Firebase email/password + guest mode enabled
+- **Data Layer**: Subscriptions still use mock/local store (Firestore is optional future work)
+- **Production Ready**: Replace `apiService` with Firestore or REST backend
 - **Type Safe**: Full TypeScript coverage
 - **Performance**: Optimized with useMemo for calculations
 - **UX**: Pull-to-refresh on all lists

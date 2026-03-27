@@ -1,32 +1,39 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator } from 'react-native';
 
-interface LoginScreenProps {
-  onLogin: (email: string, password: string) => Promise<void>;
-  onSignup: () => void;
+interface SignupScreenProps {
+  onSignupComplete: (email: string, password: string) => Promise<void>;
+  onBackToLogin: () => void;
   onContinueAsGuest: () => void;
   loading?: boolean;
   error?: string | null;
 }
 
-export default function LoginScreen({
-  onLogin,
-  onSignup,
+export default function SignupScreen({
+  onSignupComplete,
+  onBackToLogin,
   onContinueAsGuest,
   loading = false,
   error,
-}: LoginScreenProps) {
+}: SignupScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [localError, setLocalError] = useState<string | null>(null);
 
-  const handleLogin = async () => {
-    await onLogin(email, password);
+  const handleSignup = async () => {
+    if (password !== confirmPassword) {
+      setLocalError('Passwords do not match.');
+      return;
+    }
+    setLocalError(null);
+    await onSignupComplete(email, password);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>SubPatrol</Text>
-      <Text style={styles.subtitle}>Track your subscriptions</Text>
+      <Text style={styles.title}>Create Account</Text>
+      <Text style={styles.subtitle}>Sign up to sync subscriptions across sessions.</Text>
 
       <TextInput
         style={styles.input}
@@ -46,14 +53,23 @@ export default function LoginScreen({
         onChangeText={setPassword}
       />
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      <TextInput
+        style={styles.input}
+        placeholder="Confirm Password"
+        secureTextEntry
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign In</Text>}
+      {localError ? <Text style={styles.errorText}>{localError}</Text> : null}
+      {!localError && error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+      <TouchableOpacity style={styles.button} onPress={handleSignup} disabled={loading}>
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Create Account</Text>}
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.button, styles.secondaryButton]} onPress={onSignup} disabled={loading}>
-        <Text style={styles.secondaryButtonText}>Create Account</Text>
+      <TouchableOpacity style={[styles.button, styles.secondaryButton]} onPress={onBackToLogin} disabled={loading}>
+        <Text style={styles.secondaryButtonText}>Back to Sign In</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.textButton} onPress={onContinueAsGuest} disabled={loading}>
@@ -81,6 +97,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     marginBottom: 24,
+    textAlign: 'center',
+    maxWidth: 280,
   },
   input: {
     width: '100%',

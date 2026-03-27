@@ -4,6 +4,7 @@ export const ROUTES = {
 
   // Auth
   LOGIN: 'Login',
+  SIGNUP: 'Signup',
 
   // Main Tabs
   MAIN_TABS: 'MainTabs',

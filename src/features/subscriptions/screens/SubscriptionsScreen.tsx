@@ -7,7 +7,7 @@ import {
   FlatList,
   RefreshControl,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSubscriptionStore } from '../../../store/subscriptionStore';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../core/constants';
 import { ROUTES } from '../../../core/routes';
@@ -28,7 +28,13 @@ export default function SubscriptionsScreen() {
 
   useEffect(() => {
     fetchSubscriptions();
-  }, []);
+  }, [fetchSubscriptions]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchSubscriptions();
+    }, [fetchSubscriptions])
+  );
 
   const handleAddSubscription = () => {
     navigation.navigate(ROUTES.SUBSCRIPTION_FORM as never);

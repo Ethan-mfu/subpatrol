@@ -11,6 +11,7 @@ import { YearlyTotalCard } from '../components/YearlyTotalCard';
 import { AlertBanner } from '../components/AlertBanner';
 import { UpcomingRenewalCard } from '../components/UpcomingRenewalCard';
 import { calculateMonthlyTotal, formatCurrency, sortByNextBilling } from '../../../core/utils/subscriptionUtils';
+import { fromStableDateISOString } from '../../../core/utils/dateUtils';
 
 export default function DashboardScreen() {
   const navigation = useNavigation();
@@ -27,7 +28,7 @@ export default function DashboardScreen() {
   const upcomingSubscriptions = sortByNextBilling(activeSubscriptions).slice(0, 5);
   const trialSubscriptions = activeSubscriptions.filter(sub => sub.isTrial && sub.trialEndsDate);
   const nextTrialEnding = trialSubscriptions.length > 0
-    ? trialSubscriptions.sort((a, b) => new Date(a.trialEndsDate!).getTime() - new Date(b.trialEndsDate!).getTime())[0]
+    ? trialSubscriptions.sort((a, b) => fromStableDateISOString(a.trialEndsDate!).getTime() - fromStableDateISOString(b.trialEndsDate!).getTime())[0]
     : null;
 
   const handleSubscriptionPress = (id: string) => {
@@ -46,7 +47,7 @@ export default function DashboardScreen() {
   };
 
   const formatTrialEndDate = (dateString: string) => {
-    const date = new Date(dateString);
+    const date = fromStableDateISOString(dateString);
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   };

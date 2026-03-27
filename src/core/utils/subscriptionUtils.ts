@@ -1,5 +1,6 @@
 import { Subscription, BillingCycle } from '../../models/subscription';
 import { CURRENCIES } from '../constants';
+import { fromStableDateISOString, toLocalStartOfDay } from './dateUtils';
 
 /**
  * Format currency value with symbol
@@ -18,7 +19,7 @@ export function formatCurrency(amount: number, currencyCode: string): string {
  * Format date to readable string
  */
 export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+  const date = fromStableDateISOString(dateString);
   return date.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'short',
@@ -30,8 +31,8 @@ export function formatDate(dateString: string): string {
  * Calculate days until next billing
  */
 export function daysUntilBilling(nextBillingDate: string): number {
-  const today = new Date();
-  const billingDate = new Date(nextBillingDate);
+  const today = toLocalStartOfDay(new Date());
+  const billingDate = toLocalStartOfDay(fromStableDateISOString(nextBillingDate));
   const diffTime = billingDate.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays;
@@ -129,8 +130,8 @@ export function needsReminder(subscription: Subscription): boolean {
  */
 export function sortByNextBilling(subscriptions: Subscription[]): Subscription[] {
   return [...subscriptions].sort((a, b) => {
-    const dateA = new Date(a.nextBillingDate).getTime();
-    const dateB = new Date(b.nextBillingDate).getTime();
+    const dateA = fromStableDateISOString(a.nextBillingDate).getTime();
+    const dateB = fromStableDateISOString(b.nextBillingDate).getTime();
     return dateA - dateB;
   });
 }

@@ -56,6 +56,7 @@ function SubscriptionsNavigator() {
 function MainTabs({ onLogout }: { onLogout: () => void }) {
   return (
     <Tab.Navigator
+      detachInactiveScreens
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#007AFF',
@@ -126,6 +127,7 @@ export default function AppNavigator() {
     initializeAuth,
     signIn,
     signUp,
+    resetPassword,
     continueAsGuest,
     logout,
   } = useAuthStore();
@@ -173,6 +175,10 @@ export default function AppNavigator() {
               onLogin={async (email, password) => {
                 clearError();
                 await signIn(email, password);
+              }}
+              onForgotPassword={async (email) => {
+                clearError();
+                await resetPassword(email);
               }}
               onSignup={() => {
                 clearError();

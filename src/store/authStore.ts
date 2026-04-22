@@ -3,6 +3,7 @@ import {
   User,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
@@ -23,6 +24,7 @@ interface AuthStore {
   initializeAuth: () => () => void;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   continueAsGuest: () => void;
   logout: () => Promise<void>;
 }
@@ -54,6 +56,9 @@ const normalizeAuthError = (error: unknown): string => {
   }
   if (has('invalid-email')) {
     return 'Please enter a valid email address.';
+  }
+  if (has('user-not-found')) {
+    return 'No account found for this email.';
   }
   if (has('too-many-requests')) {
     return 'Too many attempts. Please wait and try again.';
@@ -130,6 +135,17 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ loading: true, error: null });
     try {
       await createUserWithEmailAndPassword(auth, email.trim(), password);
+    } catch (error) {
+      set({ loading: false, error: normalizeAuthError(error) });
+      throw error;
+    }
+  },
+
+  resetPassword: async (email) => {
+    set({ loading: true, error: null });
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+      set({ loading: false, error: null });
     } catch (error) {
       set({ loading: false, error: normalizeAuthError(error) });
       throw error;

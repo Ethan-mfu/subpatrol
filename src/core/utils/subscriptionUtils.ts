@@ -66,6 +66,30 @@ export function getMonthlyEquivalent(price: number, cycle: BillingCycle): number
 }
 
 /**
+ * Advance a billing date by one billing cycle.
+ */
+export function advanceBillingDate(date: Date, cycle: BillingCycle): Date {
+  const nextDate = new Date(date);
+
+  switch (cycle) {
+    case 'daily':
+      nextDate.setDate(nextDate.getDate() + 1);
+      break;
+    case 'weekly':
+      nextDate.setDate(nextDate.getDate() + 7);
+      break;
+    case 'monthly':
+      nextDate.setMonth(nextDate.getMonth() + 1);
+      break;
+    case 'yearly':
+      nextDate.setFullYear(nextDate.getFullYear() + 1);
+      break;
+  }
+
+  return nextDate;
+}
+
+/**
  * Convert between supported currencies using static USD reference rates.
  */
 export function convertCurrencyAmount(amount: number, fromCurrency: string, toCurrency: string): number {

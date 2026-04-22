@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, Switch, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Switch } from 'react-native';
 import { Card } from '../../../components/Card';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../core/constants';
 
@@ -20,9 +20,6 @@ export function NotificationSettings({
 }: NotificationSettingsProps) {
   const handleToggle = (value: boolean) => {
     onNotificationToggle(value);
-    if (value) {
-      Alert.alert('Notifications Enabled', 'You will receive reminders for upcoming renewals');
-    }
   };
 
   return (

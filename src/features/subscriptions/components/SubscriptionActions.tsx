@@ -7,13 +7,17 @@ import { SPACING } from '../../../core/constants';
 interface SubscriptionActionsProps {
   subscriptionName: string;
   onEdit: () => void;
+  onMarkAsPaid?: () => void;
   onDelete: () => void;
+  showMarkAsPaid?: boolean;
 }
 
 export function SubscriptionActions({ 
   subscriptionName, 
   onEdit, 
-  onDelete 
+  onMarkAsPaid,
+  onDelete,
+  showMarkAsPaid = false
 }: SubscriptionActionsProps) {
   const handleDelete = () => {
     if (Platform.OS === 'web') {
@@ -42,6 +46,15 @@ export function SubscriptionActions({
 
   return (
     <View style={styles.actions}>
+      {showMarkAsPaid && onMarkAsPaid && (
+        <Button
+          title="Mark as Paid"
+          onPress={onMarkAsPaid}
+          variant="secondary"
+          size="large"
+          style={styles.actionButton}
+        />
+      )}
       <Button
         title="Edit Subscription"
         onPress={onEdit}

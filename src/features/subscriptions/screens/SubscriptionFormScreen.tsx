@@ -40,6 +40,10 @@ export default function SubscriptionFormScreen() {
   const handleSubmit = async () => {
     if (!formData.name.trim()) return Alert.alert('Error', 'Please enter a subscription name');
     if (!formData.price || parseFloat(formData.price) <= 0) return Alert.alert('Error', 'Please enter a valid price');
+    if (!formData.billingCycle) return Alert.alert('Error', 'Please select a billing cycle');
+    if (!(formData.nextBillingDate instanceof Date) || Number.isNaN(formData.nextBillingDate.getTime())) {
+      return Alert.alert('Error', 'Please select a valid next billing date');
+    }
 
     setIsSubmitting(true);
     try {

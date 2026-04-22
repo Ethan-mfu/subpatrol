@@ -18,5 +18,4 @@ export const auth = getAuth(app);
 export const db = initializeFirestore(app, {
   // Expo native environments are more stable with long polling.
   experimentalForceLongPolling: Platform.OS !== 'web',
-  useFetchStreams: Platform.OS === 'web',
 });

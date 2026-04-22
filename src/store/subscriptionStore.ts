@@ -4,6 +4,9 @@ import { UserPreferences, DEFAULT_USER_PREFERENCES } from '../models/user';
 import { apiService } from '../services/api';
 import { useAuthStore } from './authStore';
 import { firestoreSubscriptionsService } from '../services/firestoreSubscriptions';
+import { notificationService } from '../services/notifications';
+import { advanceBillingDate } from '../core/utils/subscriptionUtils';
+import { fromStableDateISOString, toStableDateISOString } from '../core/utils/dateUtils';
 
 const mapFriendlyValidationMessage = (rawMessage: string): string | null => {
   const message = rawMessage.toLowerCase();
@@ -84,7 +87,8 @@ interface SubscriptionStore {
   addSubscription: (subscription: Omit<Subscription, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateSubscription: (id: string, updates: Partial<Subscription>) => Promise<void>;
   deleteSubscription: (id: string) => Promise<void>;
-  updateUserPreferences: (preferences: Partial<UserPreferences>) => void;
+  markSubscriptionAsPaid: (id: string) => Promise<void>;
+  updateUserPreferences: (preferences: Partial<UserPreferences>) => Promise<void>;
 }
 
 export const useSubscriptionStore = create<SubscriptionStore>((set, get) => ({
@@ -104,6 +108,17 @@ export const useSubscriptionStore = create<SubscriptionStore>((set, get) => ({
           ? await firestoreSubscriptionsService.fetchSubscriptions(user.uid)
           : await apiService.fetchSubscriptions();
       set({ subscriptions, isLoading: false });
+
+      const preferences = get().userPreferences;
+      try {
+        await notificationService.syncSubscriptionNotifications(
+          subscriptions,
+          preferences.notificationsEnabled,
+          preferences.defaultReminderDaysBefore
+        );
+      } catch {
+        // Keep data flow working even if notification sync fails.
+      }
     } catch (error) {
       set({ error: getStoreErrorMessage(error, 'Failed to load subscriptions'), isLoading: false });
     }
@@ -122,6 +137,17 @@ export const useSubscriptionStore = create<SubscriptionStore>((set, get) => ({
         subscriptions: [...state.subscriptions, newSubscription],
         isLoading: false,
       }));
+
+      const state = get();
+      try {
+        await notificationService.syncSubscriptionNotifications(
+          state.subscriptions,
+          state.userPreferences.notificationsEnabled,
+          state.userPreferences.defaultReminderDaysBefore
+        );
+      } catch {
+        // Do not block successful saves if notification sync fails.
+      }
     } catch (error) {
       const message = getStoreErrorMessage(error, 'Failed to add subscription');
       set({ error: message, isLoading: false });
@@ -149,6 +175,17 @@ export const useSubscriptionStore = create<SubscriptionStore>((set, get) => ({
           ),
           isLoading: false,
         }));
+
+        const state = get();
+        try {
+          await notificationService.syncSubscriptionNotifications(
+            state.subscriptions,
+            state.userPreferences.notificationsEnabled,
+            state.userPreferences.defaultReminderDaysBefore
+          );
+        } catch {
+          // Do not block successful updates if notification sync fails.
+        }
         return;
       }
 
@@ -160,6 +197,17 @@ export const useSubscriptionStore = create<SubscriptionStore>((set, get) => ({
           ),
           isLoading: false,
         }));
+
+        const state = get();
+        try {
+          await notificationService.syncSubscriptionNotifications(
+            state.subscriptions,
+            state.userPreferences.notificationsEnabled,
+            state.userPreferences.defaultReminderDaysBefore
+          );
+        } catch {
+          // Do not block successful updates if notification sync fails.
+        }
       }
     } catch (error) {
       const message = getStoreErrorMessage(error, 'Failed to update subscription');
@@ -182,6 +230,17 @@ export const useSubscriptionStore = create<SubscriptionStore>((set, get) => ({
         subscriptions: state.subscriptions.filter((sub) => sub.id !== id),
         isLoading: false,
       }));
+
+      const state = get();
+      try {
+        await notificationService.syncSubscriptionNotifications(
+          state.subscriptions,
+          state.userPreferences.notificationsEnabled,
+          state.userPreferences.defaultReminderDaysBefore
+        );
+      } catch {
+        // Do not block successful deletes if notification sync fails.
+      }
     } catch (error) {
       const message = getStoreErrorMessage(error, 'Failed to delete subscription');
       set({ error: message, isLoading: false });
@@ -189,10 +248,53 @@ export const useSubscriptionStore = create<SubscriptionStore>((set, get) => ({
     }
   },
 
+  // Mark subscription as paid and move to next billing cycle
+  markSubscriptionAsPaid: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const currentSubscription = get().subscriptions.find((sub) => sub.id === id);
+      if (!currentSubscription) {
+        throw new Error('Subscription not found.');
+      }
+
+      if (currentSubscription.isTrial) {
+        throw new Error('Trial subscriptions cannot be marked as paid.');
+      }
+
+      const nextBillingDate = advanceBillingDate(
+        fromStableDateISOString(currentSubscription.nextBillingDate),
+        currentSubscription.billingCycle
+      );
+
+      const updatedNextBillingDate = toStableDateISOString(nextBillingDate);
+      await get().updateSubscription(id, {
+        nextBillingDate: updatedNextBillingDate,
+      });
+
+      set({ isLoading: false, error: null });
+    } catch (error) {
+      const message = getStoreErrorMessage(error, 'Failed to mark subscription as paid');
+      set({ error: message, isLoading: false });
+      throw new Error(message);
+    }
+  },
+
   // Update user preferences
-  updateUserPreferences: (preferences) => {
-    set((state) => ({
-      userPreferences: { ...state.userPreferences, ...preferences },
-    }));
+  updateUserPreferences: async (preferences) => {
+    const previous = get().userPreferences;
+    const next = { ...previous, ...preferences };
+
+    set({ userPreferences: next });
+
+    try {
+      await notificationService.syncSubscriptionNotifications(
+        get().subscriptions,
+        next.notificationsEnabled,
+        next.defaultReminderDaysBefore
+      );
+    } catch (error) {
+      set({ userPreferences: previous });
+      throw error;
+    }
   },
 }));

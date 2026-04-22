@@ -29,6 +29,7 @@ export function FormBillingDates({
         label="Next Billing Date"
         value={nextBillingDate}
         onChange={onNextBillingDateChange}
+        required
       />
 
       <View style={styles.switchRow}>

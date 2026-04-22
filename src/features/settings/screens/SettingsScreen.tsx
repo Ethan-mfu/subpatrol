@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useSubscriptionStore } from '../../../store/subscriptionStore';
 import { useAuthStore } from '../../../store/authStore';
 import { COLORS, SPACING, FONT_SIZES } from '../../../core/constants';
@@ -22,15 +22,29 @@ export default function SettingsScreen({ onLogout }: SettingsScreenProps) {
   const initial = isGuest ? 'G' : (user?.email?.charAt(0).toUpperCase() || 'U');
 
   const handleCurrencyChange = (currencyCode: string) => {
-    updateUserPreferences({ currency: currencyCode });
+    void updateUserPreferences({ currency: currencyCode });
   };
 
   const handleNotificationToggle = (value: boolean) => {
-    updateUserPreferences({ notificationsEnabled: value });
+    void updateUserPreferences({ notificationsEnabled: value })
+      .then(() => {
+        if (value) {
+          Alert.alert('Notifications Enabled', 'Renewal reminders are now active for upcoming subscriptions.');
+        }
+      })
+      .catch((error: unknown) => {
+        const message = error instanceof Error && error.message
+          ? error.message
+          : 'Could not enable notifications. Please check notification permissions in system settings.';
+
+        Alert.alert('Notification Setup Failed', message);
+      });
   };
 
   const handleReminderChange = (days: number) => {
-    updateUserPreferences({ defaultReminderDaysBefore: days });
+    void updateUserPreferences({ defaultReminderDaysBefore: days }).catch(() => {
+      Alert.alert('Update Failed', 'Could not update reminder settings. Please try again.');
+    });
   };
 
   return (

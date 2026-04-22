@@ -15,7 +15,7 @@ import { daysUntilBilling } from '../../../core/utils/subscriptionUtils';
 export default function SubscriptionDetailScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { subscriptions, deleteSubscription } = useSubscriptionStore();
+  const { subscriptions, deleteSubscription, markSubscriptionAsPaid } = useSubscriptionStore();
 
   // @ts-ignore - route params
   const subscriptionId = route.params?.id;
@@ -37,6 +37,10 @@ export default function SubscriptionDetailScreen() {
   const handleDelete = async () => {
     await deleteSubscription(subscription.id);
     navigation.goBack();
+  };
+
+  const handleMarkAsPaid = async () => {
+    await markSubscriptionAsPaid(subscription.id);
   };
 
   const daysUntil = daysUntilBilling(subscription.nextBillingDate);
@@ -92,7 +96,9 @@ export default function SubscriptionDetailScreen() {
           <SubscriptionActions
             subscriptionName={subscription.name}
             onEdit={handleEdit}
+            onMarkAsPaid={subscription.status === 'active' && !subscription.isTrial ? handleMarkAsPaid : undefined}
             onDelete={handleDelete}
+            showMarkAsPaid={subscription.status === 'active' && !subscription.isTrial}
           />
         </View>
       </ScrollView>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -25,10 +25,6 @@ export default function SubscriptionsScreen() {
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<SubscriptionCategory | 'all'>('all');
-
-  useEffect(() => {
-    fetchSubscriptions();
-  }, [fetchSubscriptions]);
 
   useFocusEffect(
     React.useCallback(() => {

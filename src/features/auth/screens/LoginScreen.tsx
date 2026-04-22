@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator 
 
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => Promise<void>;
+  onForgotPassword: (email: string) => Promise<void>;
   onSignup: () => void;
   onContinueAsGuest: () => void;
   loading?: boolean;
@@ -11,6 +12,7 @@ interface LoginScreenProps {
 
 export default function LoginScreen({
   onLogin,
+  onForgotPassword,
   onSignup,
   onContinueAsGuest,
   loading = false,
@@ -19,6 +21,7 @@ export default function LoginScreen({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const isValidEmail = (value: string) => /^\S+@\S+\.\S+$/.test(value);
 
@@ -34,7 +37,30 @@ export default function LoginScreen({
     }
 
     setLocalError(null);
+    setSuccessMessage(null);
     await onLogin(trimmedEmail, password);
+  };
+
+  const handleForgotPassword = async () => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setLocalError('Please enter your email address first.');
+      return;
+    }
+    if (!isValidEmail(trimmedEmail)) {
+      setLocalError('Please enter a valid email address.');
+      return;
+    }
+
+    setLocalError(null);
+    setSuccessMessage(null);
+
+    try {
+      await onForgotPassword(trimmedEmail);
+      setSuccessMessage('Password reset email sent. Check your inbox.');
+    } catch {
+      // Parent store error will be shown below.
+    }
   };
 
   return (
@@ -68,9 +94,14 @@ export default function LoginScreen({
 
       {localError ? <Text style={styles.errorText}>{localError}</Text> : null}
       {!localError && error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {!localError && !error && successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
 
       <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
         {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign In</Text>}
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.textButton} onPress={handleForgotPassword} disabled={loading}>
+        <Text style={styles.textButtonText}>Forgot Password?</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={[styles.button, styles.secondaryButton]} onPress={onSignup} disabled={loading}>
@@ -120,6 +151,12 @@ const styles = StyleSheet.create({
     maxWidth: 320,
     textAlign: 'center',
   },
+  successText: {
+    color: '#34C759',
+    marginBottom: 12,
+    maxWidth: 320,
+    textAlign: 'center',
+  },
   button: {
     backgroundColor: '#007AFF',
     paddingHorizontal: 40,
@@ -145,10 +182,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   textButton: {
-    marginTop: 8,
+    marginTop: 4,
+    marginBottom: 12,
   },
   textButtonText: {
-    color: '#666',
+    color: '#007AFF',
     fontSize: 14,
     textDecorationLine: 'underline',
   },
